@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this project in research or practice, please cite it using the information below."
+title: "Adaptive Model Risk"
+type: software
+authors:
+- family-names: "Elmi"
+  given-names: "Omid"
+license: Apache-2.0
+repository-code: "https://github.com/omidelmi87/adaptive-model-risk"
