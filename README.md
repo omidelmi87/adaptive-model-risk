@@ -2,6 +2,32 @@
 
 **Adaptive Model Risk** is an open-source research project focused on detecting and diagnosing deterioration in predictive models when the economic environment, population, or underlying relationships in the data change over time.
 
+## Baseline Model Experiment
+
+The first reproducible experiment is now available.
+
+The baseline notebook creates a controlled synthetic credit-risk environment, generates borrower default outcomes from a known probability-of-default process, trains a logistic regression model, and establishes reference performance metrics for later model-deterioration experiments.
+
+**Baseline test performance**
+
+| Metric                    |  Value |
+| ------------------------- | -----: |
+| ROC AUC                   |  0.839 |
+| Brier Score               | 0.0683 |
+| Log Loss                  | 0.2368 |
+| Calibration Error         | 0.0042 |
+| MAE vs. Synthetic True PD | 0.0028 |
+
+These results represent a deliberately healthy baseline model. Future experiments will keep the trained model fixed while changing the operating environment to study covariate drift, concept drift, calibration deterioration, and model-performance degradation.
+
+[View the baseline notebook](notebooks/01_baseline_model.ipynb)
+
+### Baseline Calibration
+
+![Baseline model calibration](figures/baseline_calibration.png)
+
+> **Note:** The current experiment uses synthetic data and an intentionally controlled data-generating process. It is designed to study model-risk mechanisms and should not be interpreted as a production credit-risk model or as representative of any financial institution.
+
 ## Motivation
 
 Financial institutions increasingly rely on statistical and machine-learning models for credit risk, forecasting, fraud detection, customer analytics, and other decision-making processes.
@@ -52,15 +78,20 @@ The project is expected to include:
 
 ## Current Status
 
-**Project initiation and research design.**
+The project has progressed from initial research design to experimental implementation.
 
-Current work focuses on:
+The first baseline experiment is complete and includes:
 
-- defining the research problem;
-- refining research questions;
-- evaluating candidate public datasets;
-- reviewing model-risk-management and model-monitoring literature;
-- developing the initial methodological framework.
+* a reproducible synthetic credit-risk data-generating process;
+* a baseline logistic regression model;
+* held-out model evaluation;
+* discrimination and calibration analysis;
+* comparison of model-predicted risk with known synthetic true risk;
+* reproducible figures and baseline monitoring metrics.
+
+Current development is focused on creating controlled future environments in which the baseline model is exposed to distribution shift and changes in the relationship between predictors and outcomes.
+
+The next experiments will investigate the distinction between changes in $P(X)$, changes in $P(Y \mid X)$, and actual deterioration in model reliability.
 
 ## Documentation
 
