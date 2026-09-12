@@ -18,7 +18,8 @@ The baseline notebook creates a controlled synthetic credit-risk environment, ge
 | Calibration Error         | 0.0042 |
 | MAE vs. Synthetic True PD | 0.0028 |
 
-These results represent a deliberately healthy baseline model. Future experiments will keep the trained model fixed while changing the operating environment to study covariate drift, concept drift, calibration deterioration, and model-performance degradation.
+These results represent a deliberately healthy baseline model. Subsequent experiments keep the trained model fixed while changing the operating environment to study covariate drift, concept drift, calibration deterioration, and model-performance degradation.
+
 
 [View the baseline notebook](notebooks/01_baseline_model.ipynb)
 
@@ -27,6 +28,66 @@ These results represent a deliberately healthy baseline model. Future experiment
 ![Baseline model calibration](figures/baseline_calibration.png)
 
 > **Note:** The current experiment uses synthetic data and an intentionally controlled data-generating process. It is designed to study model-risk mechanisms and should not be interpreted as a production credit-risk model or as representative of any financial institution.
+
+## Controlled Model Deterioration Experiments
+
+The second reproducible experiment keeps the trained baseline model fixed and evaluates it under controlled future environments.
+
+The experiments independently manipulate:
+
+$$
+P(X)
+$$
+
+and:
+
+$$
+P(Y \mid X)
+$$
+
+to distinguish input-distribution drift from deterioration in the relationship between model inputs and outcomes.
+
+Four controlled environments form a $2 \times 2$ experimental design:
+
+| Scenario        | $P(X)$ | $P(Y \mid X)$ |
+| --------------- | -------- | --------------- |
+| Stable          | Baseline | Baseline        |
+| Covariate Drift | Changed  | Baseline        |
+| Concept Drift   | Baseline | Changed         |
+| Combined Drift  | Changed  | Changed         |
+
+A separate economic-shock experiment also changes both the unemployment distribution and the true sensitivity of default risk to unemployment.
+
+### Key Experimental Results
+
+| Scenario        | Max PSI | ROC AUC | Calibration Error | MAE vs. Synthetic True PD |
+| --------------- | ------: | ------: | ----------------: | ------------------------: |
+| Stable          |  0.0000 |  0.8383 |            0.0019 |                    0.0023 |
+| Covariate Drift |  0.1204 |  0.8300 |            0.0043 |                    0.0029 |
+| Concept Drift   |  0.0000 |  0.8316 |            0.0511 |                    0.0505 |
+| Combined Drift  |  0.1204 |  0.8237 |            0.0673 |                    0.0665 |
+| Economic Shock  | 10.0183 |  0.8241 |            0.0793 |                    0.0792 |
+
+The controlled results illustrate two central findings:
+
+* detectable input drift does not necessarily imply substantial model deterioration;
+* substantial model deterioration can occur even when monitored input distributions remain unchanged.
+
+In particular, the Concept Drift experiment uses exactly the same model-input observations as the Stable environment. Input-drift statistics are therefore zero, while calibration error and error relative to the known synthetic true probability increase materially.
+
+The progressive-deterioration experiment further shows that probability accuracy can worsen gradually while input drift remains zero and ROC AUC remains relatively stable.
+
+[View the model deterioration notebook](notebooks/02_model_deterioration.ipynb)
+
+### Input Drift vs. Model Deterioration
+
+![Input drift versus model deterioration](figures/drift_vs_model_deterioration.png)
+
+### Progressive Concept Drift
+
+![Progressive concept drift](figures/progressive_concept_drift_pd.png)
+
+> **Note:** These experiments use synthetic controlled environments designed to isolate model-risk mechanisms. Scenario magnitudes, including the severe economic-shock PSI, are experimental stress settings and should not be interpreted as universal production monitoring thresholds.
 
 ## Motivation
 
@@ -78,20 +139,26 @@ The project is expected to include:
 
 ## Current Status
 
-The project has progressed from initial research design to experimental implementation.
+The project has progressed from initial research design through baseline model development and controlled model-deterioration experiments.
 
-The first baseline experiment is complete and includes:
+Completed work currently includes:
 
 * a reproducible synthetic credit-risk data-generating process;
-* a baseline logistic regression model;
-* held-out model evaluation;
-* discrimination and calibration analysis;
+* a frozen baseline logistic regression pipeline;
+* held-out discrimination and calibration evaluation;
 * comparison of model-predicted risk with known synthetic true risk;
-* reproducible figures and baseline monitoring metrics.
+* controlled Stable, Covariate Drift, Concept Drift, and Combined Drift environments;
+* a \(2 \times 2\) experimental design separating changes in \(P(X)\) from changes in \(P(Y \mid X)\);
+* PSI, KS, and Wasserstein input-drift monitoring;
+* progressive concept-drift experiments across multiple monitoring periods;
+* an economic regime-change stress experiment;
+* reusable drift-detection utilities;
+* reproducible figures and monitoring summaries.
 
-Current development is focused on creating controlled future environments in which the baseline model is exposed to distribution shift and changes in the relationship between predictors and outcomes.
+The controlled experiments demonstrate that observable input drift and deterioration in model validity are related but distinct phenomena. In particular, the project shows both that substantial input drift can occur without substantial probability error and that material calibration deterioration can occur while monitored input distributions remain unchanged.
 
-The next experiments will investigate the distinction between changes in $P(X)$, changes in $P(Y \mid X)$, and actual deterioration in model reliability.
+Current development will build on these controlled experiments toward broader monitoring and diagnostic methods for identifying when a previously valid model may require investigation, recalibration, retraining, or redevelopment.
+
 
 ## Documentation
 
