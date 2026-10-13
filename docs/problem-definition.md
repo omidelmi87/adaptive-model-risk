@@ -60,18 +60,38 @@ In such situations, relationships learned from historical observations may no lo
 
 ## Research Challenge
 
-The project aims to investigate monitoring approaches that move beyond simply detecting whether data have changed.
+The project investigates monitoring approaches that move beyond simply detecting whether data have changed.
 
-The broader objective is to determine:
+The broader challenge is to determine:
 
-1. whether meaningful change has occurred;
-2. whether the change affects model performance;
-3. which variables or relationships are contributing to deterioration;
-4. how severe the deterioration is;
-5. what type of model-management response may be appropriate.
+1. whether an observed change is unusual relative to normal operating variation;
+2. whether the change reflects a shift in the model-input population, deterioration in the relationship between predictors and outcomes, or both;
+3. whether predicted probabilities remain reliable after the environment changes;
+4. how quickly meaningful deterioration can be identified when outcome labels are delayed;
+5. how persistent monitoring evidence should be before an alert is treated as meaningful;
+6. what type of model-management response may ultimately be appropriate.
+
+A central part of this challenge is separating **observable input change** from **evidence that the model itself has become unreliable**.
+
+The project therefore evaluates input-distribution evidence and outcome-based evidence separately before combining them within a sequential monitoring framework.
+
+Normal recurring variation, such as calendar seasonality, must also be distinguished from abnormal change so that expected fluctuations do not generate unnecessary alerts.
 
 ## Intended Outcome
 
-The intended outcome is an open and reproducible framework for studying and diagnosing model degradation under changing financial and economic conditions.
+The intended outcome is an open and reproducible framework for studying, detecting, and diagnosing model deterioration under changing financial and economic conditions.
 
-The framework is intended to support research and model-risk analysis rather than replace institution-specific model validation, governance, or regulatory judgment.
+The framework is designed to support experiments involving:
+
+* stable but seasonally changing environments;
+* gradual shifts in model-input populations;
+* gradual deterioration in predictor-outcome relationships;
+* combined population and relationship changes;
+* abrupt economic regime changes;
+* delayed availability of realized outcomes;
+* sequential accumulation of monitoring evidence;
+* measurement of detection delay, missed detection, and false-alert behavior.
+
+The framework is intended to help distinguish **what has changed**, **whether model reliability has changed**, and **which monitoring evidence supports that conclusion**.
+
+It is intended to support research and model-risk analysis rather than replace institution-specific model validation, governance, or regulatory judgment.
