@@ -89,6 +89,117 @@ The progressive-deterioration experiment further shows that probability accuracy
 
 > **Note:** These experiments use synthetic controlled environments designed to isolate model-risk mechanisms. Scenario magnitudes, including the severe economic-shock PSI, are experimental stress settings and should not be interpreted as universal production monitoring thresholds.
 
+## Adaptive Monitoring and Early-Warning Experiment
+
+The third reproducible experiment extends the controlled deterioration framework into a sequential monitoring system designed to identify abnormal changes over time.
+
+The experiment simulates 36 monthly monitoring periods with:
+
+* recurring calendar seasonality;
+* gradual population shift;
+* gradual deterioration in the relationship between predictors and outcomes;
+* combined population and relationship changes;
+* an abrupt economic regime shock;
+* delayed outcome labels.
+
+The frozen baseline model is not retrained during the experiment. Instead, monitoring evidence accumulates as new monthly cohorts arrive.
+
+### Two Monitoring Channels
+
+The framework separates evidence into two complementary channels.
+
+**Input monitoring** evaluates changes in the model-input distribution using:
+
+* Population Stability Index (PSI);
+* Kolmogorov-Smirnov statistic;
+* Wasserstein distance.
+
+**Outcome monitoring** evaluates whether predicted probabilities remain reliable after outcomes become available using:
+
+* prediction-versus-observed default-rate gaps;
+* calibration error.
+
+ROC AUC and Brier score are retained as diagnostic measures but are not used directly as primary alert components.
+
+This separation is important because a changing population does not necessarily imply that the model relationship has deteriorated, while deterioration in the relationship between inputs and outcomes can occur even when the input distribution remains stable.
+
+### Seasonality-Aware Monitoring
+
+Raw drift measures can change substantially because of normal seasonal patterns.
+
+To avoid treating expected calendar variation as abnormal deterioration, the experiment estimates healthy reference distributions separately by calendar month. Monitoring statistics are converted into empirical percentiles relative to the expected healthy distribution for the corresponding month.
+
+The experiment therefore evaluates whether a monitoring signal is unusual **relative to what is normally expected at that point in the seasonal cycle**, rather than relying on one fixed drift threshold throughout the year.
+
+### Sequential Alert System
+
+Monitoring signals are combined using exponentially weighted moving averages (EWMA) so that recent evidence receives greater weight while isolated monthly fluctuations have limited influence.
+
+The experiment uses:
+
+* EWMA smoothing parameter: 0.30;
+* 2,000 healthy-null simulated trajectories;
+* 1,500 trajectories for component normalization;
+* 500 held-out trajectories for system-level calibration;
+* a 99th-percentile raw system threshold;
+* a persistence rule requiring at least 2 raw alerts within 3 eligible monitoring periods.
+
+The resulting calibrated system-score threshold is approximately:
+0.962926
+
+
+### Detection Results
+
+| Scenario                      | First Confirmed Alert | Detection Delay | Change Progress at Detection | Confirmed Evidence |
+| ----------------------------- | --------------------: | --------------: | ---------------------------: | ------------------ |
+| Seasonal Stable               |                  None |               — |                            — | None               |
+| Gradual Covariate Shift       |             Period 18 |       5 periods |                          50% | Input              |
+| Gradual Concept Deterioration |             Period 22 |       9 periods |                          83% | Outcome            |
+| Gradual Combined Shift        |             Period 18 |       5 periods |                          50% | Input + Outcome    |
+| Abrupt Regime Shock           |             Period 18 |       5 periods |                         100% | Input + Outcome    |
+
+The stable evaluation path produces no confirmed alert.
+
+The Gradual Covariate Shift scenario is detected through the input channel without a confirmed outcome alert. In contrast, pure Concept Deterioration produces no confirmed input alert and is detected only after outcome evidence becomes available.
+
+This illustrates a central result of the project:
+
+> **Input distribution shift and deterioration in model validity are related but distinct monitoring problems.**
+
+### Label Delay and Detection Latency
+
+Outcome-based monitoring cannot react immediately when outcomes are observed with delay.
+
+In the experiment, labels become available three months after each cohort is generated. For Concept Deterioration, the first affected cohort begins at Period 13, but its outcome evidence first becomes available at Period 16. A confirmed outcome alert occurs at Period 22.
+
+The observed detection delay therefore reflects both:
+
+1. **information delay** — waiting for affected outcomes to become observable; and
+2. **statistical latency** — accumulating enough persistent evidence to distinguish deterioration from normal variation.
+
+### Stable Ranking Does Not Guarantee Reliable Probabilities
+
+The concept-deterioration experiment also demonstrates that ROC AUC can remain comparatively stable while calibration deteriorates.
+
+The model may continue to rank higher-risk observations above lower-risk observations even as its predicted probabilities become systematically unreliable.
+
+For this reason, discrimination metrics alone are insufficient for monitoring models whose probability estimates are used for risk-sensitive decisions.
+
+[View the adaptive monitoring notebook](notebooks/03_adaptive_monitoring.ipynb)
+
+### Adaptive Monitoring Figures
+
+The experiment produces reproducible figures illustrating:
+
+* joint system scores across deterioration scenarios;
+* input-versus-outcome monitoring evidence;
+* confirmed detection delays;
+* healthy-null threshold calibration;
+* calendar-aware seasonality effects on PSI;
+* stable discrimination alongside deteriorating calibration.
+
+> Note: The monitoring thresholds and scenario magnitudes in this experiment are derived from a controlled synthetic environment. They are intended to demonstrate monitoring methodology and should not be interpreted as universal thresholds for production model-risk management.
+
 ## Motivation
 
 Financial institutions increasingly rely on statistical and machine-learning models for credit risk, forecasting, fraud detection, customer analytics, and other decision-making processes.
@@ -139,7 +250,7 @@ The project is expected to include:
 
 ## Current Status
 
-The project has progressed from initial research design through baseline model development and controlled model-deterioration experiments.
+The project has progressed through three reproducible stages: baseline model development, controlled model-deterioration experiments, and sequential adaptive monitoring.
 
 Completed work currently includes:
 
@@ -147,18 +258,28 @@ Completed work currently includes:
 * a frozen baseline logistic regression pipeline;
 * held-out discrimination and calibration evaluation;
 * comparison of model-predicted risk with known synthetic true risk;
-* controlled Stable, Covariate Drift, Concept Drift, and Combined Drift environments;
-* a \(2 \times 2\) experimental design separating changes in \(P(X)\) from changes in \(P(Y \mid X)\);
+* controlled Stable, Covariate Drift, Concept Drift, Combined Drift, and economic regime-shock environments;
+* experimental separation of changes in $P(X)$ from changes in $P(Y \mid X)$;
 * PSI, KS, and Wasserstein input-drift monitoring;
-* progressive concept-drift experiments across multiple monitoring periods;
-* an economic regime-change stress experiment;
-* reusable drift-detection utilities;
-* reproducible figures and monitoring summaries.
+* progressive deterioration experiments across multiple monitoring periods;
+* deterministic calendar seasonality in monitored inputs;
+* calendar-aware healthy-null normalization of monitoring statistics;
+* delayed outcome availability;
+* separate input and outcome monitoring channels;
+* EWMA-based sequential evidence accumulation;
+* empirically calibrated system-level alert thresholds;
+* persistence-based confirmed-alert rules;
+* detection-delay and false-alert measurement;
+* reusable drift and monitoring utilities;
+* reproducible monitoring figures and result summaries.
 
-The controlled experiments demonstrate that observable input drift and deterioration in model validity are related but distinct phenomena. In particular, the project shows both that substantial input drift can occur without substantial probability error and that material calibration deterioration can occur while monitored input distributions remain unchanged.
+The experiments demonstrate that observable input drift and deterioration in model validity are related but distinct phenomena. Population changes can trigger input-drift evidence without indicating that the predictive relationship has failed, while material deterioration in probability reliability can occur without abnormal changes in monitored inputs.
 
-Current development will build on these controlled experiments toward broader monitoring and diagnostic methods for identifying when a previously valid model may require investigation, recalibration, retraining, or redevelopment.
+The adaptive monitoring experiment further demonstrates that the timing and source of monitoring evidence depend on the type of change. Population shift can be identified through contemporaneous input evidence, while deterioration in the relationship between inputs and outcomes may only become detectable after outcome labels arrive and sufficient statistical evidence accumulates.
 
+The current project therefore provides a controlled experimental foundation for studying not only whether a model has changed, but **what type of change has occurred, how early it can be detected, and which monitoring evidence supports that conclusion**.
+
+Future development will extend this framework toward additional model classes, monitoring settings, datasets, and response strategies such as investigation, recalibration, retraining, or redevelopment.
 
 ## Documentation
 
