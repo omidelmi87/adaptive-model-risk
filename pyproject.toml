@@ -1,0 +1,19 @@
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adaptive-model-risk"
+version = "0.1.0"
+description = "Adaptive monitoring framework for binary classification models"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["adaptive_model_risk*"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<10",
+]
